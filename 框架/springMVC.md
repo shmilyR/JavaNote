@@ -1,13 +1,100 @@
-+ servlet做控制器开发的问题：
-    + servlet写的多
-    + 需要自己手动搜集参数
-    + 需要自己进行类型转换    
+> servlet做控制器开发的问题：  
++ servlet写的多
++ 需要自己手动搜集参数
++ 需要自己进行类型转换    
 
 servlet类的运行环境就是服务器  
 之前：页面放在WEBROOT 下 页面 控制器 页面  
 springMVC : 为了项目安全，将页面放在WEB-INF下 需要有一个起始控制器，即控制器 页面 控制器 页面
 > springMVC环境搭建：  
-+ 用一个中央控制器Servlet -> 多个action(自己的控制器)  
++ 用一个中央控制器Servlet（只需要这一个servlet） -> 多个action(自己的控制器)  
 + 不用手动搜集参数  
 + 不需要类型转换
     + 导包spring核心6个包 + spring-webmvc,spring-web,spring-aop  
++ servlet作为控制器的缺点：
+    + 收集参数过于繁琐；
+    + 和容器耦合度过高（request,response）
+    + 必须继承HttpRequest,HttpResponse
++ springMVC的控制器就是一个普通方法。  
+  + @Controller表示控制器   
+    + 必须要有一个文件来扫描类中的注解。
+  + @RequestMapping("访问路径") 代表控制器访问的路径。  
+1、将核心控制器配置到web.xml中
+```xml
+<!-- web.xml配置：（加载中央控制器） -->
+<servlet>
+    <servlet-name>springmvc</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <!--容器优先加载 -->
+    <load-on-start>1</load-on-start>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>springmvc</servlet-name>
+    <!--自己控制器的后缀，自己定义 拦截以.action的结尾的控制 -->
+    <url-pattern>*.action</url-pattern>
+</servlet-mapping>
+<!--通过中央控制器来来加载自己的控制器，必须要有一个文件springmvc-servlet.xml一般与servlet名字相同 -->  
+``` 
+```xml
+<!-- springmvc-servlet.xml的配置 -->
+<!-- 扫描包下的所有控制器 -->
+<context:component-scan base-package="com.java.controller"/>
+ <!--配置页面中项目的访问路径 prefix为前缀 suffix为后缀-->
+<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+```
++ 解决springMVC乱码问题(配过滤器)：  
+```xml
+<filter>
+    <filter-name>encodingFilter</filter-name>
+    <filter-class>
+    org.springframework.web.filter.CharacterEncodingFilter
+    </filter-class>
+    <init-param>
+        <param-name>encoding</param-name>
+        <param-value>UTF-8</param-value>
+    </init-param>
+</filter>
+<filter-mapping>
+    <filter-name>encodingFilter</filter-name>
+    <url-pattern>/</url-pattern>
+</filter-mapping>
+```  
++ 字符串自动转换：  
+@ModelAttribute("user")User user
++ springMVC可以按照对象来收集参数，页面的name名字必须和实体类中的对象名一致。
++ 控制器只是根据页面传来的数据调用service层方法返回的值跳转不同的页面。  
++ equal和“==”比较数据的区别：
++ @Service 代表服务层的注解 
++ 在Controller层中@Autowired  代表自动注入 <font color="yellow">应该写在set方法上，因为自动注入是通过调用set方法来实现注入，而且自动注入需要配置xml文件来扫描自动注入的类</font> 
++ 通过监听器来加载spring配置文件
+```xml
+ <!--监听加载spring的配置文件 -->
+<listener>
+    <listener-class>
+    org.springframework.web.context.ContextLoaderListener
+    </listener-class>
+</listener>
+<!--告诉监听器 spring配置文件的路径 -->
+<context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>/WEB-INF/service.xml</param-value>
+</context-param>
+```
++ 扫描自动注入的类
+```xml
+<!-- 需要的包xmlns:context="http://www.springframework.org/schema/context"
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd"> -->
+<!--服务器扫描自动注入的类 -->
+<context:component-scan base-package="com.java.service"/>
+<context:component-scan base-package="com.java.dao"/>
+```
++ 必须在web.xml中加配置（用监听器来加载配置文件,必须告诉监听器，spring配置文件的路径<content-param来配置）
++ @Repository 代表dao层
++ @Componet 代表一个bean 但是没有service、repository更能直观的表示出层级结构。
+
+
