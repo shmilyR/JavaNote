@@ -18,7 +18,7 @@ springMVC : 为了项目安全，将页面放在WEB-INF下 需要有一个起始
 + springMVC的控制器就是一个普通方法。  
   + @Controller表示控制器   
     + 必须要有一个文件来扫描类中的注解。
-  + @RequestMapping("访问路径") 代表控制器访问的路径。  
+  + @RequestMapping("访问路径") 代表控制器访问的路径。  页面中 name的值和 类中方法的参数保持一致 必须一致 要不然就无法收集
 1、将核心控制器配置到web.xml中
 ```xml
 <!-- web.xml配置：（加载中央控制器） -->
@@ -39,6 +39,12 @@ springMVC : 为了项目安全，将页面放在WEB-INF下 需要有一个起始
 ```xml
 <!-- springmvc-servlet.xml的配置 -->
 <!-- 扫描包下的所有控制器 -->
+<!--springMVC默认的配置文件名 springmvc-servlet 改名字的话，需要如下配置：
+    <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>servlet配置文件位置</param-value>
+    </init-param>
+-->
 <context:component-scan base-package="com.java.controller"/>
  <!--配置页面中项目的访问路径 prefix为前缀 suffix为后缀-->
 <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
@@ -69,7 +75,7 @@ springMVC : 为了项目安全，将页面放在WEB-INF下 需要有一个起始
 + 控制器只是根据页面传来的数据调用service层方法返回的值跳转不同的页面。  
 + equal和“==”比较数据的区别：
 + @Service 代表服务层的注解 
-+ 在Controller层中@Autowired  代表自动注入 <font color="yellow">应该写在set方法上，因为自动注入是通过调用set方法来实现注入，而且自动注入需要配置xml文件来扫描自动注入的类</font> 
++ 在Controller层中@Autowired  代表自动注入 <font color="yellow">应该写在set方法上，因为自动注入是通过调用set方法来实现注入，而且自动注入需要配置xml文件来扫描自动注入的类  写在构造方法上，表示构造注入</font> 
 + 通过监听器来加载spring配置文件
 ```xml
  <!--监听加载spring的配置文件 -->
@@ -95,6 +101,39 @@ http://www.springframework.org/schema/context/spring-context.xsd"> -->
 ```
 + 必须在web.xml中加配置（用监听器来加载配置文件,必须告诉监听器，spring配置文件的路径<content-param来配置）
 + @Repository 代表dao层
-+ @Componet 代表一个bean 但是没有service、repository更能直观的表示出层级结构。
++ @Componet 代表一个bean 但是没有service、repository更能直观的表示出层级结构。(通用型组件)
++ @Required 也是在setter上用 但必须给bean的一个属性赋值。（检查特定的属性是否设置，若未设置，会抛出一个bean初始化异常）
+```java
+xml配置：
+ <bean id="userDao" class="com.java.vo.User">
+        <property name="username" value="李四"/>
+    </bean>
+    <bean id="user" class="com.java.dao.UserDao">
+        <property name="user" ref="userDao"/>
+    </bean>
+java代码：
+private User user;
 
+public User getUser() {
+    return user;
+}
+@Required
+public void setUser(User user) {
+    this.user = user;
+}
+```
++ @Qualifier("配置文件中对应的bean的id名") 按类型注入
++ @Resource 按名称注入  （name="" 代表按类型注入）最好写在setter方法上。  
++ @PreDestroy  销毁，服务器销毁时调用的方法 
++ @PostConstruct 初始化，服务器启动时调用的方法 
++ @PreDestroy与@PostConstruct与servlet的生命周期有关。PostConstruct在构造函数之后，init()方法之后执行，PreDestroy在destroy之前执行。   
+ 白盒测试 测试功能  黑盒测试 保证每个分支都要走到 
+ <font color="yellow">表单提交时，只有post方法能走过滤器。尽量少用get提交。</font>  
+ 单向数据绑定：提交到完成页面，就不可再改变，若想改变，就必须重新提交数据
+ 双向数据绑定MVVM
+
+
+
+
+  
 
