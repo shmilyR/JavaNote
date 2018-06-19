@@ -15,10 +15,11 @@ springMVC : 为了项目安全，将页面放在WEB-INF下 需要有一个起始
     + 收集参数过于繁琐；
     + 和容器耦合度过高（request,response）
     + 必须继承HttpRequest,HttpResponse
-+ springMVC的控制器就是一个普通方法。  
++ springMVC的控制器就是一个普通方法。
+> 请求转发  
   + @Controller表示控制器   
     + 必须要有一个文件来扫描类中的注解。
-  + @RequestMapping("访问路径") 代表控制器访问的路径。  页面中 name的值和 类中方法的参数保持一致 必须一致 要不然就无法收集
+  + @RequestMapping("访问路径") 代表控制器访问的路径。  页面中 name的值和 类中方法的参数保持一致 必须一致 要不然就无法收集<font color="yellow">在整个类的头部上加@RequestMapping("访问路径")是为了分层，模块化</font>   
 1、将核心控制器配置到web.xml中
 ```xml
 <!-- web.xml配置：（加载中央控制器） -->
@@ -46,7 +47,7 @@ springMVC : 为了项目安全，将页面放在WEB-INF下 需要有一个起始
     </init-param>
 -->
 <context:component-scan base-package="com.java.controller"/>
- <!--配置页面中项目的访问路径 prefix为前缀 suffix为后缀-->
+ <!--配置页面中项目的访问路径 prefix为前缀 suffix为后缀 在这里，是“转发”的操作-->
 <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/views/"/>
         <property name="suffix" value=".jsp"/>
@@ -126,11 +127,20 @@ public void setUser(User user) {
 + @Resource 按名称注入  （name="" 代表按类型注入）最好写在setter方法上。  
 + @PreDestroy  销毁，服务器销毁时调用的方法 
 + @PostConstruct 初始化，服务器启动时调用的方法 
-+ @PreDestroy与@PostConstruct与servlet的生命周期有关。PostConstruct在构造函数之后，init()方法之后执行，PreDestroy在destroy之前执行。   
- 白盒测试 测试功能  黑盒测试 保证每个分支都要走到 
++ @PreDestroy与@PostConstruct与servlet的生命周期有关。PostConstruct在构造函数之后，init()方法之后执行，PreDestroy在destroy之前执行。
++ 初始化或者销毁时，会出现多次的原因：配置文件中注入了一次，加载配置文件时，有多少个对象，此方法被调用多少次。 
++ @GetMapping():get方法提交
++ @PostMapping():post方法提交  
++ @RequestParam String username 
+ 白盒测试 测试功能  
+ 黑盒测试 保证每个分支都要走到   
  <font color="yellow">表单提交时，只有post方法能走过滤器。尽量少用get提交。</font>  
- 单向数据绑定：提交到完成页面，就不可再改变，若想改变，就必须重新提交数据
- 双向数据绑定MVVM
+ 单向数据绑定：提交到完成页面，就不可再改变，若想改变，就必须重新提交数据  
+ 双向数据绑定MVVM  
+ 分布式：向多个服务器发出请求。
+> 重定向
+
+
 
 
 
