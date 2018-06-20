@@ -131,14 +131,22 @@ public void setUser(User user) {
 + 初始化或者销毁时，会出现多次的原因：配置文件中注入了一次，加载配置文件时，有多少个对象，此方法被调用多少次。 
 + @GetMapping():get方法提交
 + @PostMapping():post方法提交  
-+ @RequestParam String username 
++ @RequestParam String username   
  白盒测试 测试功能  
  黑盒测试 保证每个分支都要走到   
  <font color="yellow">表单提交时，只有post方法能走过滤器。尽量少用get提交。</font>  
  单向数据绑定：提交到完成页面，就不可再改变，若想改变，就必须重新提交数据  
  双向数据绑定MVVM  
  分布式：向多个服务器发出请求。
-> 重定向
+> 重定向  
+```java
+return "redirect:/控制器的路径";
+```
+> session  
++ @SessionAttributes("存入session中的名字"):注意：控制器中，有@SessionAttributes("存入session中的名字")时，一定要有model。
++ @SessionAttribute()作用在类上  
++ 一般是在重定向，需要传递参数时使用。
+> ajax
 
 
 
