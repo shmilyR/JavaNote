@@ -138,7 +138,9 @@ public void setUser(User user) {
  单向数据绑定：提交到完成页面，就不可再改变，若想改变，就必须重新提交数据  
  双向数据绑定MVVM  
  分布式：向多个服务器发出请求。
-> 重定向  
+> 重定向    
+
+重定向只能用get提交方式
 ```java
 return "redirect:/控制器的路径";
 ```
@@ -146,7 +148,21 @@ return "redirect:/控制器的路径";
 + @SessionAttributes("存入session中的名字"):注意：控制器中，有@SessionAttributes("存入session中的名字")时，一定要有model。
 + @SessionAttribute()作用在类上  
 + 一般是在重定向，需要传递参数时使用。
-> ajax
+> 拦截器(AOP的实现)  
++ 要么继承一个类，要么实现一个接口(HandlerInterceptor)  
+    jdk1.8新特性：接口中可以写普通方法，只需要在普通方法前加default
++ 加入配置文件(加入到springmvc的配置文件中)
+```xml
+<mvc:interceptors>
+    <mvc:interceptor>
+        <!--拦截地址栏路径 -->
+        <mvc:mapping path = ""></mvc:mapping>
+        <!--用哪个类进行拦截 -->
+        <bean class="" ></bea>
+    </mvc:interceptor>
+</mvc:interceptors>
+```
++ 动态可插拔的组件，使用不会对自己的类和代码有任何影响。(AOP 面向切面编程 可配置的 动态的) 
 
 
 
