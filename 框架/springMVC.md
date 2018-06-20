@@ -155,7 +155,7 @@ return "redirect:/控制器的路径";
 ```xml
 <mvc:interceptors>
     <mvc:interceptor>
-        <!--拦截地址栏路径 -->
+        <!--拦截地址栏路径 path可以是拦截全部的/** 也可以是拦截指定控制器下的,在指定控制器的类名上加@RequestMapping("")表示本类的访问路径，一般在类名上加此注解，是为了区分同一包下、不同类的相同访问路径名-->
         <mvc:mapping path = ""></mvc:mapping>
         <!--用哪个类进行拦截 -->
         <bean class="" ></bea>
