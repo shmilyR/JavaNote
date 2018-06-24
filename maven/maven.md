@@ -160,4 +160,21 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
     runtime:
 + 运行调试maven项目:
     + 当前maven能够集成的tomcat只有tomcat-maven-plugin和tomcat7-maven-plugin
++ maven的概念模型(两大核心)：
+    + 依赖管理：对jar包的管理
+    + 项目构建：通过命令来构建。
+## <font color="blue">maven应用</font> 
++ 传递依赖冲突解决
+    + 什么是传递依赖：  
+    a依赖b,b依赖c，c则为a的传递依赖，b为a的直接依赖。  
+    冲突：两个项目同时依赖于同一个jar,版本重复。
+    + maven的自主调解原则：
+        + 第一声明者优先原则:先定义的，就用此传递依赖
+        + 路径近者优先原则:直接依赖级别高于传递依赖。
++ maven整合框架
+    + spring
+    + springMVC
+    + mybatis
++ maven对项目进行拆分、聚合
++ 私服应用
 
