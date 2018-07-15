@@ -182,7 +182,8 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
         + 数据库包 驱动
         + 日志(commons-logging4j与jlf4j(格式化日志的)使用上的区别)
         + 第三方的数据源 druid(阿里的)
-    + 
+        + springAOP必须有AOP包的支持(两个包 aspectjrt aspectjweaver(植入))
+    + 核心文件配置
 + maven对项目进行拆分、聚合
 + 私服应用
 
