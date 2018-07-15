@@ -172,10 +172,17 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
     + maven的自主调解原则：
         + 第一声明者优先原则:先定义的，就用此传递依赖
         + 路径近者优先原则:直接依赖级别高于传递依赖。
-+ maven整合框架
-    + spring
-    + springMVC
-    + mybatis
++ maven整合框架(spring + springMVC + mybatis)
+    + 导包 
+        + spring 核心包(5个 + AOP) + springMVC(web webmvc) 
+        + spring-jbdc.jar包
+        + mybatis
+        + mybatis-spring 框架整合包
+        + spring-tx 事务管理包
+        + 数据库包 驱动
+        + 日志(commons-logging4j与jlf4j(格式化日志的)使用上的区别)
+        + 第三方的数据源 druid(阿里的)
+    + 
 + maven对项目进行拆分、聚合
 + 私服应用
 
