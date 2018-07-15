@@ -146,6 +146,25 @@
     + 存在问题：服务节点没有办法动态的插入和删除。原因：服务器的查找是根据Hash值来实现的。(3.0之后又真正的集群)
     + 分片式集群与集群的区别：
         + 处于分片式集群中的两个Redis服务器根本不知道两者处于同一集群中；真正的集群知道。
+    + 需要注意的是：密码的设置。
+    ```java
+    //分片式集群代码示例
+    public static void JedisPoolTestDemo() {
+        JedisPoolConfig config = new JedisPoolConfig();
+        config.setMaxTotal(50);
+
+        List<JedisShardInfo> jedisShardInfos = new ArrayList<>();
+        JedisShardInfo jedisShardInfo = new JedisShardInfo("127.0.0.1",6379);
+        jedisShardInfo.setPassword("123456789");
+        jedisShardInfos.add(jedisShardInfo);
+
+        ShardedJedisPool shardedJedisPool = new ShardedJedisPool(config,jedisShardInfos);
+
+        ShardedJedis shardedJedis = shardedJedisPool.getResource();
+        String value = shardedJedis.get("name");
+        System.out.println(value);
+    }
+    ```
 
    
    
