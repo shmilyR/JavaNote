@@ -172,7 +172,8 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
     + maven的自主调解原则：
         + 第一声明者优先原则:先定义的，就用此传递依赖
         + 路径近者优先原则:直接依赖级别高于传递依赖。
-+ maven整合框架(spring + springMVC + mybatis)
++ maven整合框架(spring + springMVC + mybatis)  
+     面向接口开发，只需要写一个接口和方法 通过接口中的方法来找到mapper中的SQL语句。
     + 导包 
         + spring 核心包(5个 + AOP) + springMVC(web webmvc) 
         + spring-jbdc.jar包
@@ -185,12 +186,178 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
         + springAOP必须有AOP包的支持(两个包 aspectjrt aspectjweaver(植入))
     + 核心文件配置
         + lo4j.properties
+        ```properties
+        log4j.rootLogger=debug,stdout
+        log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+        log4j.appender.stdout.layout=org.apache.log4j.SimpleLayout
+            log4j.logger.com.ibatis=DEBUG
+        log4j.logger.com.ibatis.common.jdbc.SimpleDataSource=DEBUG
+        log4j.logger.com.ibatis.common.jdbc.ScriptRunner=DEBUG
+        log4j.logger.com.ibatis.sqlmap.engine.impl.SqlMapClientDelegate=DEBUG
+        log4j.logger.java.sql.Connection=DEBUG
+        log4j.logger.java.sql.Statement=DEBUG
+        log4j.logger.java.sql.PreparedStatement=DEBUG
+        ```
         + jdbc.properties
+        ```properties
+        jdbc.driverClassName=com.mysql.jdbc.Driver
+        jdbc.url=jdbc:mysql://127.0.0.1:3306/day0408
+        jdbc.username=root
+        jdbc.password=lr123456789
+        ```
         + applicationContext.xml(spring)
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+        <!--用spring核心配置文件来读取spring-mybatis和spring-tx.xml两个配置文件，注意次序-->
+        <import resource="spring-mybatis.xml"/>
+        <import resource="spring-tx.xml"/>
+        </beans>
+        ```
         + spring-mybatis.xml(spring和mybatis进行整合，数据库配置)
+        ```xml
+        <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+            <!--读取jdbc.properties文件的配置信息 classpath代表类路径 -->
+            <context:property-placeholder location="classpath:jdbc.properties"/>
+            <!--往第三方数据源上设置 druid database 获取数据库连接 数据库连接不能关闭-->
+            <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+            destroy-method="close" init-method="init">
+            <!--根据需要灵活配置， 驱动类 url username password必须 -->
+            <property name="driverClassName" value="${jdbc.driverClassName}"/>
+            <property name="url" value="${jdbc.url}"/>
+            <property name="username" value="${jdbc.username}"/>
+            <property name="password" value="${jdbc.password}"/>
+            </bean>
+            <!--配置数据源是为了往mybatis上注入 -->
+            <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+            <!--sqlSessionFactory获取数据库连接 -->
+            <property name="dataSource" ref="dataSource"/>
+            <!-- 自动扫描Mapper配置文件-->
+            <property name="mapperLocations" value="classpath:com/java/mapper/UserMapper/*Mapper.xml"/>
+            <!--一般不写mybatis的配置文件 -->
+            </bean>
+            <!--配置自动查到Dao包下的类 -->
+            <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+            <!--查找自己写的dao层 -->
+            <property name="basePackage" value="com.java.dao"/>
+            <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+            </bean>
+        </beans>
+        ```
         + spring-tx.xml(对dao层方式的事务进行配置 AOP)
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd">
+        <!--开启事务注解扫描 -->
+        <aop:aspectj-autoproxy proxy-target-class="true"/>
+        <!--spring jdbc事务管理器 读文件时才会注入 1、main方法直接读 2、服务器扫描注解-->
+        <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+        </bean>
+        <!--事务增强通知 将事务加入指定的方法 isolation:事务的隔    离级别-->
+         <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="add*" isolation="DEFAULT" propagation="REQUIRED" read-only="false" rollback-for="Exception"/>
+            <tx:method name="delete*" isolation="DEFAULT" propagation="REQUIRED" read-only="false" rollback-for="Exception"/>
+        </tx:attributes>
+        </tx:advice>
+        <!--用AOP将通知切入方法 切入点  1、execution(* ) 2
+        within(*) PointCut 将事务切入指定的方法 第一个*代表任意的返回值 第二个代表此包下任意的类
+         第三个*代表任意类中任意的方法 括号里的(..)代表方法的任意参数  within(com.java.dao..*)-->
+            <aop:config>
+            <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.java.dao.*.*(..))"/>
+            </aop:config>
+        </beans>
+        ```
         + spring-mvc.xml(springmvc的配置文件)
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+        <context:component-scan base-package="com.java.*"/>
+        <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/"/>
+        <property name="suffix" value=".jsp"/>
+        </bean>
+        </beans>
+        ```
         + mybatis-config.xml(可以省略掉)
+        此处已省略，在整合时，可以不用写
+        + web.xml
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+        <display-name>Archetype Created Web Application</display-name>
+        <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+        </listener>
+        <!--告诉监听器 spring配置文件的位置 -->
+         <context-param>
+         <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:applicationContext.xml</param-value>
+        </context-param>
+        <welcome-file-list>
+         <welcome-file>HomeController.action</welcome-file>
+        </welcome-file-list>
+         <!--配置中央控制器 -->
+        <servlet>
+         <servlet-name>dispatcher</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:spring-mvc.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+        </servlet>
+        <servlet-mapping>
+        <servlet-name>dispatcher</servlet-name>
+        <url-pattern>*.action</url-pattern>
+        </servlet-mapping>
+        <!--解决中文乱码问题 -->
+        <filter>
+            <filter-name>encodingFilter</filter-name>
+            <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceRequestEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        </filter>
+        <filter-mapping>
+            <filter-name>encodingFilter</filter-name>
+            <url-pattern>/*</url-pattern>
+        </filter-mapping>
+        </web-app>
+        ```
 + maven对项目进行拆分、聚合
 + 私服应用
 
