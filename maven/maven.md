@@ -184,6 +184,13 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
         + 第三方的数据源 druid(阿里的)
         + springAOP必须有AOP包的支持(两个包 aspectjrt aspectjweaver(植入))
     + 核心文件配置
+        + lo4j.properties
+        + jdbc.properties
+        + applicationContext.xml(spring)
+        + spring-mybatis.xml(spring和mybatis进行整合，数据库配置)
+        + spring-tx.xml(对dao层方式的事务进行配置 AOP)
+        + spring-mvc.xml(springmvc的配置文件)
+        + mybatis-config.xml(可以省略掉)
 + maven对项目进行拆分、聚合
 + 私服应用
 

@@ -5,6 +5,7 @@
     + 使用C编写,为key-value的数据模型
     + 支持的value类型：String,Hash,list(链表),set,有序set
     + 为了保证效率，数据都是缓存在内存中，也可以周期性的把更新的数据写入磁盘，或者把修改操作写入追加的记录文件。
+    + 出现的原因：mysql是持久化在磁盘里，所以cpu访问会很慢，而redis是在内存中，将redis作为MySQL的本地缓存。效率将会提升，有效缓解数据库压力。
 + 特点：
    + 高速读取数据
    + 减轻数据库负担
@@ -165,8 +166,45 @@
         System.out.println(value);
     }
     ```
++ 分布式锁
+    + 当多个进程不在同一个系统中，用分布式锁控制多个进程对资源的访问
+    + 分布式锁一般有三种实现方式：
+        + 数据库乐观锁；
+        + 基于Redis的分布式锁；
+        + 基于ZooKeeper的分布式锁。
+    + 为了确保分布式锁可用，至少要确保锁的实现同时满足以下几种条件：
+        + 互斥性。在任意时刻，只有一个客户端能持有锁。
+        + 不会发生死锁。即使有一个客户端在持有锁的期间崩溃而没有主动解锁，也能保证后续其他客户端能加锁。
+        + 具有容错性。只要大部分的Redis节点正常运行，客户端就可以加锁和解锁。
+        + 解铃还须系铃人。加锁和解锁必须是同一个客户端，客户端自己不能把别人加的锁给解了。   
+    + java实现  
+        + 加锁  
+        用setnx()方法设置key,下一个设置相同的key时就会失败，要等到上一个释放锁之后，当前才能获得这个key.setnx()方法就是:<u>set if not exit</u>
+        用set()方法设置key,set方法的参数有key、value、nxxx、expx、time
+            + key:锁，因为key是唯一的
+            + value:解锁时的依据
+            + nxxx:如果是SET IF NOT EXIT,即当key不存在时，就进行set操作，当key存在时，就什么也不做
+            + expx:给key加一个过期的设置
+            + time:代表key的过期时间
+        ```java
+        public boolean addLock(Jedis jedis, String lockKey, String requestId, int expireTime) {
+        String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);
+            if (LOCK_SUCCESS.equals(result)) {
+                return true;
+            }
+        return false;
+        }
+        ```
+        + 解锁  
+        ```java
+         public static boolean releaseDistributedLock(Jedis jedis, String lockKey, String requestId) {
 
-   
-   
-   
-   
+        String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+        Object result = jedis.eval(script, Collections.singletonList(lockKey), Collections.singletonList(requestId));
+
+        if (RELEASE_SUCCESS.equals(result)) {
+            return true;
+        }
+        return false;
+        }
+        ```
