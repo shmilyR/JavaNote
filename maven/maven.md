@@ -190,7 +190,7 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
         log4j.rootLogger=debug,stdout
         log4j.appender.stdout=org.apache.log4j.ConsoleAppender
         log4j.appender.stdout.layout=org.apache.log4j.SimpleLayout
-            log4j.logger.com.ibatis=DEBUG
+        log4j.logger.com.ibatis=DEBUG
         log4j.logger.com.ibatis.common.jdbc.SimpleDataSource=DEBUG
         log4j.logger.com.ibatis.common.jdbc.ScriptRunner=DEBUG
         log4j.logger.com.ibatis.sqlmap.engine.impl.SqlMapClientDelegate=DEBUG
@@ -208,13 +208,13 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
         + applicationContext.xml(spring)
         ```xml
         <?xml version="1.0" encoding="UTF-8"?>
-        <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-       http://www.springframework.org/schema/beans/spring-beans.xsd">
-        <!--用spring核心配置文件来读取spring-mybatis和spring-tx.xml两个配置文件，注意次序-->
-        <import resource="spring-mybatis.xml"/>
-        <import resource="spring-tx.xml"/>
+        <beans      xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+            <!--用spring核心配置文件来读取spring-mybatis和spring-tx.xml两个配置文件，注意次序-->
+            <import resource="spring-mybatis.xml"/>
+            <import resource="spring-tx.xml"/>
         </beans>
         ```
         + spring-mybatis.xml(spring和mybatis进行整合，数据库配置)
@@ -223,33 +223,33 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
         xmlns="http://www.springframework.org/schema/beans"
         xmlns:context="http://www.springframework.org/schema/context"
         xsi:schemaLocation="http://www.springframework.org/schema/beans
-         http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
             <!--读取jdbc.properties文件的配置信息 classpath代表类路径 -->
             <context:property-placeholder location="classpath:jdbc.properties"/>
             <!--往第三方数据源上设置 druid database 获取数据库连接 数据库连接不能关闭-->
             <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
             destroy-method="close" init-method="init">
-            <!--根据需要灵活配置， 驱动类 url username password必须 -->
-            <property name="driverClassName" value="${jdbc.driverClassName}"/>
-            <property name="url" value="${jdbc.url}"/>
-            <property name="username" value="${jdbc.username}"/>
-            <property name="password" value="${jdbc.password}"/>
+                <!--根据需要灵活配置， 驱动类 url username password必须 -->
+                <property name="driverClassName" value="${jdbc.driverClassName}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
             </bean>
             <!--配置数据源是为了往mybatis上注入 -->
             <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-            <!--sqlSessionFactory获取数据库连接 -->
-            <property name="dataSource" ref="dataSource"/>
-            <!-- 自动扫描Mapper配置文件-->
-            <property name="mapperLocations" value="classpath:com/java/mapper/UserMapper/*Mapper.xml"/>
-            <!--一般不写mybatis的配置文件 -->
+                <!--sqlSessionFactory获取数据库连接 -->
+                <property name="dataSource" ref="dataSource"/>
+                <!-- 自动扫描Mapper配置文件-->
+                <property name="mapperLocations" value="classpath:com/java/mapper/UserMapper/*Mapper.xml"/>
+                <!--一般不写mybatis的配置文件 -->
             </bean>
-            <!--配置自动查到Dao包下的类 -->
+                <!--配置自动查到Dao包下的类 -->
             <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-            <!--查找自己写的dao层 -->
-            <property name="basePackage" value="com.java.dao"/>
-            <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+                <!--查找自己写的dao层 -->
+                <property name="basePackage" value="com.java.dao"/>
+                <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
             </bean>
         </beans>
         ```
@@ -257,32 +257,32 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
         ```xml
         <?xml version="1.0" encoding="UTF-8"?>
         <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:tx="http://www.springframework.org/schema/tx"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-       http://www.springframework.org/schema/beans/spring-beans.xsd
-       http://www.springframework.org/schema/aop
-       http://www.springframework.org/schema/aop/spring-aop.xsd
-       http://www.springframework.org/schema/tx
-       http://www.springframework.org/schema/tx/spring-tx.xsd">
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
         <!--开启事务注解扫描 -->
         <aop:aspectj-autoproxy proxy-target-class="true"/>
         <!--spring jdbc事务管理器 读文件时才会注入 1、main方法直接读 2、服务器扫描注解-->
         <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="dataSource"/>
+            <property name="dataSource" ref="dataSource"/>
         </bean>
         <!--事务增强通知 将事务加入指定的方法 isolation:事务的隔    离级别-->
-         <tx:advice id="txAdvice" transaction-manager="transactionManager">
-        <tx:attributes>
-            <tx:method name="add*" isolation="DEFAULT" propagation="REQUIRED" read-only="false" rollback-for="Exception"/>
-            <tx:method name="delete*" isolation="DEFAULT" propagation="REQUIRED" read-only="false" rollback-for="Exception"/>
-        </tx:attributes>
+        <tx:advice id="txAdvice" transaction-manager="transactionManager">
+            <tx:attributes>
+                <tx:method name="add*" isolation="DEFAULT" propagation="REQUIRED" read-only="false" rollback-for="Exception"/>
+                <tx:method name="delete*" isolation="DEFAULT" propagation="REQUIRED" read-only="false" rollback-for="Exception"/>
+            </tx:attributes>
         </tx:advice>
         <!--用AOP将通知切入方法 切入点  1、execution(* ) 2
         within(*) PointCut 将事务切入指定的方法 第一个*代表任意的返回值 第二个代表此包下任意的类
-         第三个*代表任意类中任意的方法 括号里的(..)代表方法的任意参数  within(com.java.dao..*)-->
-            <aop:config>
+        第三个*代表任意类中任意的方法 括号里的(..)代表方法的任意参数  within(com.java.dao..*)-->
+        <aop:config>
             <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.java.dao.*.*(..))"/>
             </aop:config>
         </beans>
