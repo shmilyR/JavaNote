@@ -145,7 +145,8 @@ public void setUser(User user) {
 return "redirect:/控制器的路径";
 ```
 > session  
-+ @SessionAttributes("存入session中的名字"):注意：控制器中，有@SessionAttributes("存入session中的名字")时，一定要有model。
++ @SessionAttributes("存入session中的名字"):注意：控制器中，有@SessionAttributes("存入session中的名字")时，一定要有model。可以将model中的属性同步到session中。
++ 当需要清除session当中的值得时候，我们只需要在controller的方法中传入一个SessionStatus的类型对象 通过调用setComplete方法就可以清除了。
 + @SessionAttribute()作用在类上  
 + 一般是在重定向，需要传递参数时使用。
 > 拦截器(AOP的实现)  
