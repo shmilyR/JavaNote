@@ -26,6 +26,9 @@
         + get 键名称 取值 (如果key不存在，则返回nil)
         + incr 键名称 对key的值做++操作，并返回一个新的值，每执行一次，值+1，值类型要是数据类型。
         + incrby 键名称 执行加法的操作，可以指定相加的值。
+        + setnx 键 值 分布式锁
+        + expire 键 时间 设置过期时间
+        + del 键 删除 
     + Hash：  
        可以用来存储对应的MySQL中一行的数据，类似于关联数组。
          + hset 哈希的名称(键名称) field(字段名称)   value 将对应的值设置进Hash表中
@@ -37,6 +40,7 @@
         + hmset 哈希名称(键名称) field1 value1 field2 value2 ...  一次性设置多个filed和value
         + hmget 哈希的名称 value1 value2... 一次性获取多个field的value
         + hgetall 哈希的名称 获取指定哈希中的所有field和value <font color="yellow">指定获得的是指定字段的键和值，而不是此表的所有信息</font>
+        + hscan 键 游标 
     + 链表
         + List类型其实就是一个双向链表，通过pop、push操作从链表的头部或尾部添加或删除元素，<font color="red">这使得链表既可以用作栈，也可以用作队列</font>
         + 上进上出：栈 特点：数据 先进后出(从链表的头部添加元素)
@@ -66,10 +70,11 @@
         + zrange 集合名称 开始下标 结束下标 按序号升序获取有序集合中的内容 <font color="red">开始下标、结束下标为排好序的一个索引</font>
         + zrevrange 集合名 开始下标(索引) 结束下标(索引) 按序号降序获取有序集合中的内容
     + HyperLogLog数据结构：用来做基数统计的算法
-        + 优点：
-            + 在输入元素的数量或者体积非常非常大时，计算基数所需要的空间总是固定的，并且是很小的。
-            + 
+        + 优点：在输入元素的数量或者体积非常非常大时，计算基数所需要的空间总是固定的，并且是很小的。
         + 缺点： HyperLogLog 只会根据输入元素来计算基数，而不会储存输入元素本身，所以 HyperLogLog 不能像集合那样，返回输入的各个元素。
+        + 	PFADD key element [element ...]  添加指定元素到HyperLogLog中
+        + PFCOUNT key [key...] 返回给定HyperLogLog的技术估计值
+        + PFMERGE destkey sourcekey [sourcekey...] 将多个HyperLogLog合并为一个HyperLogLog
 + 常用命令：
     + 键值相关命令：
         + keys返回当前数据库里的键，可以使用通配符,*表示任意多个,？表示任意一个字符。
