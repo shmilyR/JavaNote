@@ -110,7 +110,42 @@
     + PUNSUBSCRIBE 频道名 退订所有给定模式的频道
     + PSUBSCRIBE pattern 订阅一个或多个符合给定模式的频道
     + UNSUBSCRIBE 频道名 退订给定频道
-# Redis事务
++ java代码实现发布订阅
+    + 订阅端
+    ```java
+    public class Subscribe_Client {
+        public static void main(String[] args) {
+            Jedis jedis = new Jedis("127.0.0.1",6379);
+            jedis.auth("123456789");
+            Subscribe subscribe = new Subscribe();
+            jedis.subscribe(subscribe,"liang");
+        }
+    }
+    //消息展示 主要是通过重写JedisPubSub的onMessage()方法来实现
+    public class Subscribe extends JedisPubSub {
+        @Override
+        public void onMessage(String s,String s1) {
+            System.out.println(s+"==========="+s1);
+        }
+    }
+    ```
+    + 发布端
+    ```java
+    public class Subscribe_Server {
+        public static void main(String[] args) {
+            Jedis jedis = new Jedis("127.0.0.1",6379);
+            jedis.auth("123456789");
+            jedis.publish("liang","欢迎您！");
+        }
+    }
+    ```
+    客户端发布一条消息时，订阅它的服务端就会同时收到所发布的信息.
+    + 发布订阅思想的重要性：  
+        应用场景
+        + 注册发短信
+        + 抢单：用户发起打车请求，将打车信息发给每个订阅的司机
+# Redis事务  
+<font color="red">事务里边的数据类型必须是String类型的，如果出现其他类型，将会出现错误，但不会发生回滚</font>
 + Redis事务可以一次执行多个命令，并且带有以下保证：
     + 批量操作在发送EXEC命令前被放入队列缓存；
     + 收到EXEC命令后进入事务执行，事务中任意命令执行失败，其余的命令依然被执行；
@@ -121,3 +156,19 @@
     + 执行事务。
 + 单个Redis命令的执行是原子性的，但Redis没有在事务上增加任何维持原子性的机制，所有，Redis事务的执行并不是原子性的。
 + 事务可以理解为一个打包的批量执行脚本，但批量指令并非原子化的操作，中间某条指令的失败不会导致前面已做指令的回滚，也不会造成后续的指令不做。
++ 事务命令：
+    + MULTI 标志一个事务块的开始
+    + EXEC 执行所有事务块内的命令
+    + DISCARD 取消事务，放弃执行事务块内的所有命令
+    + WATCH 键名 监视一个或多个key,如果在事务执行之前这个或这些key被其他命令所改动，那么事务将被打断<font color="yellow"> 只能在WATCH域内修改数据，其他事务不能修改被WATCH的数据(相当于加了锁)，除非将键unwatch.</font>
+    + UNWATCH 取消WATCH命令对所有key的监视
++ Redis事务执行流程  
+<img src="image/redis事务执行流程.PNG"></img>
++ 注意：但并不是所有的命令都会被放进事务队列，其中的例外就是EXEC、DISCARD、MULTI、WATCH，当这四个命令从客户端发送到服务器时，它们会像客户端处于非事务状态一样，直接被服务器执行。
+<img src="image/redis事务.PNG"></img>
+如果客户端正处于事务状态，那么当EXEC命令执行时，服务器根据客户端所保存的事务队列，以先进先出的方式执行事务队列中的命令，最先入队的命令最先执行，而最后入队的命令最后执行。  当事务队列里的所有命令被执行完之后，EXEC命令会将回复队列作为自己的执行结果返回给客户端，客户端从事务状态返回到非事务状态，至此，事务执行完毕。
++ Redis不支持回滚的原因：
+    + 只有当被调用的Redis命令有语法错误时，这条命令才会执行失败(在将这个命令放入事务队列期间，Redis才会发现此类问题),或者对某个键执行不符合其数据类型的操作；实际上，这就意味着只有程序错误才会导致Redis命令执行失败，这种错误很有可能在程序开发期间发现，一般很少在生产环境发现。Redis已经在系统内部进行功能简化，这样可以确保更快的运行速度，因为Redis不需要事务回滚功能。
+# Redis脚本
++ Redis脚本使用Lua解释器来执行脚本、
+# Redis持久化
