@@ -170,5 +170,20 @@
 + Redis不支持回滚的原因：
     + 只有当被调用的Redis命令有语法错误时，这条命令才会执行失败(在将这个命令放入事务队列期间，Redis才会发现此类问题),或者对某个键执行不符合其数据类型的操作；实际上，这就意味着只有程序错误才会导致Redis命令执行失败，这种错误很有可能在程序开发期间发现，一般很少在生产环境发现。Redis已经在系统内部进行功能简化，这样可以确保更快的运行速度，因为Redis不需要事务回滚功能。
 # Redis脚本
-+ Redis脚本使用Lua解释器来执行脚本、
++ Redis脚本使用Lua解释器来执行脚本
+    + 常用命令:
+        + EVAL script(lua脚本) numkeys(key的个数) key... arg0...执行lua脚本
+        + EVALSHA sha1 numkeys key... arg... 根据sha的校验码，执行缓存在redis中的lua脚本
+        + SCRIPT LOAD script 将脚本添加到redis缓存，但不立即执行
+        + SCRIPT EXISTS script [script ...]  查看指定的脚本是否已经被保存在缓存当中。
+        + SCRIPT FLUSH 从脚本缓存中移除所有脚本。
+        + SCRIPT KILL  杀死当前正在运行的 Lua 脚本。
 # Redis持久化
++ 什么是持久化：
+    + 就是将数据放在断电后不会丢失的设备上。
++ Redis持久化策略(RDB持久化和AOF持久化)
+    + RDB持久化(是指在指定的时间间隔内将内存中的数据集快照写入磁盘，是默认的持久化方法，这种方式就是将内存中数据以快照的方式写入到二进制文件中，默认名是dump.rdb)
+        + 
+# Redis高可用集群
+# Redis线程模型
+# Redis缓存

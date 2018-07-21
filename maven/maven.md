@@ -272,7 +272,7 @@ maven项目中需要某个jar包，只需要在Maven项目中配置需要jar包�
         <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
             <property name="dataSource" ref="dataSource"/>
         </bean>
-        <!--事务增强通知 将事务加入指定的方法 isolation:事务的隔    离级别-->
+        <!--事务增强通知 将事务加入指定的方法 isolation:事务的隔离级别-->
         <tx:advice id="txAdvice" transaction-manager="transactionManager">
             <tx:attributes>
                 <tx:method name="add*" isolation="DEFAULT" propagation="REQUIRED" read-only="false" rollback-for="Exception"/>
