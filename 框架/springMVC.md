@@ -198,6 +198,14 @@ $.ajax({
     + 必须加入三个jar包(包和spring的版本号直接相关)
     + 注解驱动，在springmvc的配置文件中加入配置<mvc:annotation-driver>
     + 前端跟后台都不需要进行数据转换
++ 围绕Handler展开 数据model 视图view
++ 请求方法细节处理：
+    + 请求参数绑定
+    + 请求方法限制
+    + 请求转发和重定向
+    + 数据模型赋值
+    + 返回json数据
+    + cookie访问
 
 
 
