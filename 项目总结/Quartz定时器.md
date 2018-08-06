@@ -14,3 +14,57 @@
 ## 表达式：cronExpression 
 1. [秒] [分] [时] [日] [月] [周] [年]
    参考了Linux的cron
+定时器的简单配置：
+1. 写出自己的任务类
+```java
+public class MyTask {
+    public void myFirstTask() {
+        System.out.println("定时器测试");
+    }
+}
+```
+2. 配置spring-quartz.xml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <!--注入自己所要执行的方法 -->
+    <bean id="MyTask" class="com.java.task.MyTask"/>
+    <!--关联要执行的方法的位置 -->
+    <bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="MyTask"/>
+        <property name="targetMethod" value="myFirstTask"/>
+    </bean>
+    <!--配置触发器 -->
+    <bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobDetail"/>
+        <property name="cronExpression" value="0/5 * * * * ? " />
+    </bean>
+    <!--配置调度工厂 -->
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="cronTrigger"/>
+            </list>
+        </property>
+    </bean>
+</beans>
+```
+3. web.xml的配置
+```xml
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>Archetype Created Web Application</display-name>
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath*:spring-quartz.xml</param-value>
+  </context-param>
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+</web-app>
+```
