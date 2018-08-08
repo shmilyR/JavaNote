@@ -42,12 +42,12 @@ HashMap是一个散列表，它存储的内容是键值对(key-value)映射。
 底层是数组+链表+红黑树。当链表中的元素超过8个之后，会将链表转换成红黑树。
 底层实现：  
 ```java
+//此类是用来实现数组及链表的数据结构
 static class Node<K,V> implements Map.Entry<K,V> {
-    final int hash;
-    final K key;
-    V value;
-    Node<K,V> next;
-
+    final int hash;//保存节点的Hash值
+    final K key;//保存节点的key值
+    V value;//保存节点的value值
+    Node<K,V> next;//指向链表结构下的当前节点的next节点。红黑树当中也有使用
     Node(int hash, K key, V value, Node<K,V> next) {
         this.hash = hash;
         this.key = key;
@@ -68,10 +68,12 @@ static class Node<K,V> implements Map.Entry<K,V> {
         value = newValue;
         return oldValue;
     }
-
+    //重写equals(),若不重写，则于'=='一样
     public final boolean equals(Object o) {
+        //==判断的是内容和类型等
         if (o == this)
             return true;
+            //判断是否为Map.Entry的实例，若key的值与value的值相等，则说明是相等的。
         if (o instanceof Map.Entry) {
             Map.Entry<?,?> e = (Map.Entry<?,?>)o;
             if (Objects.equals(key, e.getKey()) &&
@@ -81,7 +83,58 @@ static class Node<K,V> implements Map.Entry<K,V> {
         return false;
     }
 }
-```    
+```
+此类是红黑树的数据结构实现：
+```java
+final TreeNode<K,V> find(int h, Object k, Class<?> kc) {
+    TreeNode<K,V> p = this;
+    do {
+        int ph, dir; K pk;
+        TreeNode<K,V> pl = p.left, pr = p.right, q;
+        if ((ph = p.hash) > h)
+            p = pl;
+        else if (ph < h)
+            p = pr;
+        else if ((pk = p.key) == k || (k != null && k.equals(pk)))
+            return p;
+        else if (pl == null)
+            p = pr;
+        else if (pr == null)
+            p = pl;
+        else if ((kc != null ||
+                    (kc = comparableClassFor(k)) != null) &&
+                    (dir = compareComparables(kc, k, pk)) != 0)
+            p = (dir < 0) ? pl : pr;
+        else if ((q = pr.find(h, k, kc)) != null)
+            return q;
+        else
+            p = pl;
+    } while (p != null);
+    return null;
+}
+``` 
+//Node的get()
+```java
+final Node<K,V> getNode(int hash, Object key) {
+    Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
+    if ((tab = table) != null && (n = tab.length) > 0 &&
+        (first = tab[(n - 1) & hash]) != null) {
+        if (first.hash == hash && // always check first node
+            ((k = first.key) == key || (key != null && key.equals(k))))
+            return first;
+        if ((e = first.next) != null) {
+            if (first instanceof TreeNode)
+                return ((TreeNode<K,V>)first).getTreeNode(hash, key);
+            do {
+                if (e.hash == hash &&
+                    ((k = e.key) == key || (key != null && key.equals(k))))
+                    return e;
+            } while ((e = e.next) != null);
+        }
+    }
+    return null;
+}
+```   
 HashMap继承了AbstractMap<K,V>,实现了Map<K,V>,Cloneable,Serializable接口。  
 HashMap的实现不是同步的，即它不是线程安全的。它的Key、value都可以为null.此外，HashMap中的映射不是有序的。  
 ```java
