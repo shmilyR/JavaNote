@@ -36,4 +36,181 @@
     + 删除后的结构调整：
         + 当前待删除节点是红色的，它被删除之后对当前树的特性不会造成任何破坏影响；
         + 当前待删除节点是黑色的，需要进一步调整：
-            + 
+
+# HashMap简介
+HashMap是一个散列表，它存储的内容是键值对(key-value)映射。  
+底层是数组+链表+红黑树。当链表中的元素超过8个之后，会将链表转换成红黑树。
+底层实现：  
+```java
+static class Node<K,V> implements Map.Entry<K,V> {
+    final int hash;
+    final K key;
+    V value;
+    Node<K,V> next;
+
+    Node(int hash, K key, V value, Node<K,V> next) {
+        this.hash = hash;
+        this.key = key;
+        this.value = value;
+        this.next = next;
+    }
+
+    public final K getKey()        { return key; }
+    public final V getValue()      { return value; }
+    public final String toString() { return key + "=" + value; }
+
+    public final int hashCode() {
+        return Objects.hashCode(key) ^ Objects.hashCode(value);
+    }
+
+    public final V setValue(V newValue) {
+        V oldValue = value;
+        value = newValue;
+        return oldValue;
+    }
+
+    public final boolean equals(Object o) {
+        if (o == this)
+            return true;
+        if (o instanceof Map.Entry) {
+            Map.Entry<?,?> e = (Map.Entry<?,?>)o;
+            if (Objects.equals(key, e.getKey()) &&
+                Objects.equals(value, e.getValue()))
+                return true;
+        }
+        return false;
+    }
+}
+```    
+HashMap继承了AbstractMap<K,V>,实现了Map<K,V>,Cloneable,Serializable接口。  
+HashMap的实现不是同步的，即它不是线程安全的。它的Key、value都可以为null.此外，HashMap中的映射不是有序的。  
+```java
+ Map<String,Object> map = new HashMap<>(16);
+        map.put(null,null);
+        map.put("va",null);
+        map.put(null,"ajk");
+```
+```
+输出结果：
+null===========ajk
+va===========null
+```
+HashMap的两个实例有两个参数影响其性能:"初始容量"和"加载因子"。  
+容量是哈希表中桶的数量，初始容量是哈希表在创建时的容量。  
+加载因子是哈希表在其容量自动增加之前可以达到多满的一种尺度。当哈希表中的条目数超出了加载因子与当前容量的乘积时，则要对该哈希表进行rehash操作(即重建内部数据结构)，从而哈希表将具有大约两倍的桶数。  
+## HashMap的构造函数
+```java
+//默认的构造方法
+ public HashMap() {
+        this.loadFactor = DEFAULT_LOAD_FACTOR; //默认的加载因子 为0.75
+}
+//给定初始容量的构造方法
+//关于HashMap的初始容量 
+//static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
+public HashMap(int initialCapacity) {
+        this(initialCapacity, DEFAULT_LOAD_FACTOR);
+}
+//设置HashMap的初始容量和加载因子
+public HashMap(int initialCapacity, float loadFactor) {
+    //对初始容量进行判断 <0 就会抛出异常
+    if (initialCapacity < 0)
+        throw new IllegalArgumentException("Illegal initial capacity: " + initialCapacity);
+    //如果初始容量>最大容量 最大容量为2^30  就把初始容量设置为最大容量
+    if (initialCapacity > MAXIMUM_CAPACITY)
+        initialCapacity = MAXIMUM_CAPACITY;
+        //对加载因子的判断 若加载因子<=0或加载因子为整数时，抛出异常
+    if (loadFactor <= 0 || Float.isNaN(loadFactor))
+        throw new IllegalArgumentException("Illegal load factor: " +
+                                            loadFactor);
+    this.loadFactor = loadFactor;
+    //threshold是HashMap所能容纳的最大数据量的Node(键值对)个数。
+    //threshold = length * Load factor.即数组定义好长度之后，负载因子越大，所能容纳的键值对个数越多。如果超过定义好的threshold，就需要进行扩容。
+    this.threshold = tableSizeFor(initialCapacity);
+}
+public HashMap(Map<? extends K, ? extends V> m) {
+    this.loadFactor = DEFAULT_LOAD_FACTOR;
+    putMapEntries(m, false);
+}
+```  
+HashMap构造函数中的其他方法：
+```java
+//由于构造Hash时，需要保证初始容量为2^n，此函数就是为了将初始容量修剪称最接近的2^n数 HashMap中的初始容量为2^n的原因是：减少Hash冲突。
+static final int tableSizeFor(int cap) {
+    int n = cap - 1;
+    n |= n >>> 1;
+    n |= n >>> 2;
+    n |= n >>> 4;
+    n |= n >>> 8;
+    n |= n >>> 16;
+    return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+}
+final void putMapEntries(Map<? extends K, ? extends V> m, boolean evict) {
+    int s = m.size();
+    if (s > 0) {
+        if (table == null) { // pre-size
+            float ft = ((float)s / loadFactor) + 1.0F;
+            int t = ((ft < (float)MAXIMUM_CAPACITY) ?
+                        (int)ft : MAXIMUM_CAPACITY);
+            if (t > threshold)
+                threshold = tableSizeFor(t);
+        }
+        else if (s > threshold)
+            resize();
+        for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
+            K key = e.getKey();
+            V value = e.getValue();
+            putVal(hash(key), key, value, false, evict);
+        }
+    }
+}
+```
+## 为什么初始容量需要为2^n:
+举例说明：初始长度为15和16时 Hash值为8和9时 hash&(cap-1)得到Hash位置
++ 初始长度为15，Hash为8,hash&(cap-1) 8&14 1000&1110  1000 
++ 初始长度为15，Hash为9,hash&(cap-1) 9&14 1001&1110  1000  
+此时，8和9的位置发生了冲突  
++ 初始长度为16，Hash为8，hash&(cap-1) 8&15 1000&1111 1000
++ 初始长度为16，Hash为9，hash&(cap-1) 9&15 1001&1111 1001  
+此时，8和9位置并没有发生冲突。  
+这样，（1）在遍历时，初始长度为16的HashMap明显比15的时间复杂度低。也不需要进行冲突解决。（2）在初始容量为15时，最低位永远位0，会浪费掉hash值最低位为1的位置。而初始容量为16时，同时兼顾了最高位和最低位，不存在浪费。  
+```java
+static final int hash(Object key) {
+    int h;
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+    //hashCode()是Object类中的方法 是一个native方法 本地方法 native方法主要用于加载文件和动态链接库 Native意味着与平台有关 可移植性不高。
+    //^异或 相同为0 不同为1
+}
+```
+# HashMap的默认长度为16的原因：
+如果两个元素不相同,但是hash函数的值相同,这两个元素就是一个碰撞
+因为把任意长度的字符串变成固定长度的字符串,所以存在一个hash对应多个字符串的情况,所以碰撞必然存在。  
+为了减少hash值的碰撞,需要实现一个尽量均匀分布的hash函数,在HashMap中通过利用key的hashcode值,来进行位运算
+公式:index = e.hash & (newCap - 1)  
+举个例子:
+1.计算"book"的hashcode
+    十进制 : 3029737  
+    二进制 : 101110001110101110 1001  
+2.HashMap长度是默认的16，length - 1的结果  
+    十进制 : 15  
+    二进制 : 1111  
+3.把以上两个结果做与运算  
+    101110001110101110 1001 & 1111 = 1001
+    1001的十进制 : 9,所以 index=9  
+hash算法最终得到的index结果,取决于hashcode值的最后几位  
+为了推断HashMap的默认长度为什么是16
+现在,我们假设HashMap的长度是10,重复刚才的运算步骤:
+hashcode : 101110001110101110 1001
+length - 1 :                                     1001
+index :                                            1001
+再换一个hashcode 101110001110101110 1111 试试:
+hashcode : 101110001110101110 1111
+length - 1 :                                     1001  
+index :                                            1001  
+从结果可以看出,虽然hashcode变化了,但是运算的结果都是1001,也就是说,当HashMap长度为10的时候,有些index结果的出现几率
+会更大而有些index结果永远不会出现(比如0111),这样就不符合hash均匀分布的原则  
+反观长度16或者其他2的幂,length - 1的值是所有二进制位全为1,这种情况下,index的结果等同于hashcode后几位的值  
+只要输入的hashcode本身分布均匀,hash算法的结果就是均匀的
+所以,HashMap的默认长度为16,是为了降低hash碰撞的几率
+# HashMap的遍历
+# ConcurrentHashMap
+# 线程池
