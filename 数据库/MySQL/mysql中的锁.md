@@ -112,4 +112,4 @@ select max(auto_inc_col) from t for update
     + 事务等待链表  
   通过上述链表可以构造出一张图，而在这个图中，若存在回路，就代表存在死锁。  
   wait-for-graph的死锁检测通常是采用深度优先的算法实现。
-+ 锁升级：InnoDB
++ 锁升级：是指将当前锁的粒度降低。
