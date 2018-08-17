@@ -1,0 +1,10 @@
+是Java集合的一种错误检测机制，当多个线程对集合进行结构上的改变的操作时，有可能会产生fail-fast机制。  
+# fail-fast产生原因
+初步：fail-fast产生的原因在于程序在对collection进行迭代时，某个线程对该collection在结构上对其作了修改，这时迭代器就会抛出ConcurrentModificationException异常消息，从而产生了fail-fast.这种机制一般仅用于检测bug.  
+## ConcurrentModificationException
+当方法检测到对象的并发修改，但不允许这种修改时就抛出该异常。但是该异常不会始终指向对象一经由不同线程并发修改，如果单线程违反了规则，同样也有可能会抛出异常。  
+迭代器的快速失败行为无法得到保证，它不能保证一定出现该错误，但是快速失败操作会尽最大努力抛出ConcurrentModificationException异常。 
+# fail-fast解决方案
++ 在遍历过程中所有涉及到改变modCount值的地方全部加上synchronized或者直接使用Collections.synchronizedList接口,底层使用数组实现.在方法上使用add、remove、clear、iterator等方法。
++ CopyOnWriteArrayList根本就不会产生ConcurrentModificationException异常，也就是它使用迭代器完全不会产生fail-fast机制。  
+CopyOnWriterArrayList所代表的核心概念就是：任何对array在结构上有所改变的操作(add、remove、clear等)，CopyOnWriterArrayList都会copy现有的数据，再在copy的数据上修改，这样就不会影响COWIterator中的数据了，修改完成之后改变原有数据的引用即可。同时这样造成的代价就是产生大量的对象，同时数组的copy也是相当有损耗的。
