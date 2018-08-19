@@ -90,4 +90,5 @@ get操作的高效在于整个get操作过程不需要加锁，除非读到的�
 在ConcurrentHashMap中如何判断在统计的时候容器是否发生变化？使用modCount变量，在put、remove和clear方法里操作元素前都会将变量modCount进行加1，那么在统计size前后比较modCount是否发生变化，从而得知容器地大小是否发生变化。
 # JDK1.8实现原理
 利用CAS+synchronized来保证并发更新的安全。  
-底层使用数组+链表+红黑树来实现。  
+底层使用数组+链表+红黑树来实现。 
+ 
